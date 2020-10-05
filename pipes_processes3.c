@@ -18,11 +18,19 @@ int main(int argc, char **argv) {
 
   char *cat_args[] = {"cat", "scores", NULL};
   char *grep_args[] = {"grep", argv[1], NULL};
+	char *sort_args[] = {"sort", NULL};
 
   // make a pipe (fds go in pipefd[0] and pipefd[1])
-  pipe(pipefd);
-	pipe(pipefd2);
-  pid = fork();
+	if (pipe(pipefd) == -1) { 
+			fprintf(stderr, "Pipe Failed" ); 
+			return 1; 
+	} 
+	if (pipe(pipefd2) == -1) { 
+			fprintf(stderr, "Pipe Failed" ); 
+			return 1; 
+	} 
+
+	pid = fork();
 
   if (pid == 0) {
 		  
@@ -38,17 +46,14 @@ int main(int argc, char **argv) {
 				close(pipefd2[0]);
 				close(pipefd2[1]);
 
-        // Read a string using first pipe 
-				char *sort_args[] = {"sort", NULL};
-
 				// execute sort
 				execvp(sort_args[0], sort_args);
 
 			} else {
-				// child gets here and handles "grep Villanova"
+				// child gets here and handles grep
 
 				// replace standard input with input part of pipe
-				// replace standard outout with output part of pipe
+				// replace standard output with output part of pipe
 				dup2(pipefd[0], 0);
 				dup2(pipefd2[1], 1);
 				
