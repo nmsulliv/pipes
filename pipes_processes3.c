@@ -11,50 +11,69 @@
  *
  */
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
   int pipefd[2];
-  int pid;
+	int pipefd2[2];
+  int pid, pid2;
 
   char *cat_args[] = {"cat", "scores", NULL};
   char *grep_args[] = {"grep", argv[1], NULL};
 
   // make a pipe (fds go in pipefd[0] and pipefd[1])
-
   pipe(pipefd);
-
+	pipe(pipefd2);
   pid = fork();
 
-  if (pid == 0)
-    {
-      // child gets here and handles "grep Villanova"
+  if (pid == 0) {
+		  
+			pid2 = fork();
+			if (pid2 == 0) {
+				// child 2 gets here and sorts
+				// replace standard input with input part of pipe
+				dup2(pipefd2[0], 0);
 
-      // replace standard input with input part of pipe
+				// close pipes
+				close(pipefd[0]);
+				close(pipefd[1]);
+				close(pipefd2[0]);
+				close(pipefd2[1]);
 
-      dup2(pipefd[0], 0);
+        // Read a string using first pipe 
+				char *sort_args[] = {"sort", NULL};
 
-      // close unused hald of pipe
+				// execute sort
+				execvp(sort_args[0], sort_args);
 
-      close(pipefd[1]);
+			} else {
+				// child gets here and handles "grep Villanova"
 
-      // execute grep
+				// replace standard input with input part of pipe
+				// replace standard outout with output part of pipe
+				dup2(pipefd[0], 0);
+				dup2(pipefd2[1], 1);
+				
+				// close pipes
+				close(pipefd[0]);
+				close(pipefd[1]);
+				close(pipefd2[0]);
+				close(pipefd2[1]);
 
-      execvp("grep", grep_args);
+				// execute grep
+				execvp("grep", grep_args);
+			}
     }
-  else
-    {
+  else {
       // parent gets here and handles "cat scores"
-
       // replace standard output with output part of pipe
-
       dup2(pipefd[1], 1);
 
-      // close unused unput half of pipe
-
-      close(pipefd[0]);
+      // close pipes
+			close(pipefd[0]);
+			close(pipefd[1]);
+			close(pipefd2[0]);
+			close(pipefd2[1]);
 
       // execute cat
-
       execvp("cat", cat_args);
     }
 }
