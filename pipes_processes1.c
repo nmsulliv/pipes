@@ -52,7 +52,7 @@ int main() {
         // Wait for child to send a string 
         wait(NULL); 
   
-        // Read a string using first pipe 
+        // Read a string using second pipe 
         char concat_str[100]; 
         read(fd2[0], concat_str, 100); 
   
