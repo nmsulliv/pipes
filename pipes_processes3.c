@@ -5,7 +5,7 @@
 #include <sys/stat.h>
 
 /**
- * Executes the command "cat scores | grep Lakers".  In this quick-and-dirty
+ * Executes the command "cat scores | grep Lakers | sort".  In this quick-and-dirty
  * implementation the parent doesn't wait for the child to finish and
  * so the command prompt may reappear before the child terminates.
  *
